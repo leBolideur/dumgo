@@ -1,7 +1,10 @@
 package db
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -56,10 +59,61 @@ func (db *DumDB) UpdateInt(key string, operator string, by int64, reply *Respons
 	return msg
 }
 
+func (db *DumDB) Export(reply *Response) error {
+	json, err := json.Marshal(db.Data)
+	if err != nil {
+		msg := fmt.Errorf("Export failed > %s", err.Error())
+		*reply = Response{false, msg.Error()}
+		return msg
+	}
+
+	file, err := os.Create("export")
+	if err != nil {
+		msg := fmt.Errorf("Export failed > %s", err.Error())
+		*reply = Response{false, msg.Error()}
+		return msg
+	}
+	defer file.Close()
+
+	file.Write(json)
+	fmt.Printf("json >> %s\n", json)
+	*reply = Response{true, "Export with success"}
+	return nil
+}
+
+func (db *DumDB) Restore(reply *Response) error {
+	file, err := os.Open("export")
+	if err != nil {
+		msg := fmt.Errorf("Restore failed > %s", err.Error())
+		*reply = Response{false, msg.Error()}
+		return msg
+	}
+	defer file.Close()
+
+	content, err := io.ReadAll(file)
+	if err != nil {
+		msg := fmt.Errorf("No export found", err.Error())
+		*reply = Response{false, msg.Error()}
+		return msg
+	}
+	err = json.Unmarshal(content, &db.Data)
+	if err != nil {
+		msg := fmt.Errorf("Unable to restore the export", err.Error())
+		*reply = Response{false, msg.Error()}
+		return msg
+	}
+	*reply = Response{true, "Restore with success"}
+	return nil
+}
+
 func (db *DumDB) Request(req *ReqArgs, reply *Response) error {
 	switch cmd := strings.Split(req.Request, " "); cmd[0] {
 	case "HEALTH":
 		db.Health(reply)
+	case "EXPORT":
+		db.Export(reply)
+	case "RESTORE":
+		db.Restore(reply)
 	case "SET":
 		setArgs := &SetArgs{cmd[1], cmd[2]}
 		db.Set(setArgs, reply)
