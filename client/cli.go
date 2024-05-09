@@ -1,7 +1,7 @@
 package main
 
 import (
-	"dumgo/pkgs/db"
+	"dumgo/server/db"
 	"fmt"
 	"net/rpc"
 	"os"

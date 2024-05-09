@@ -7,7 +7,7 @@ import (
 	"net/rpc"
 	"os"
 
-	"dumgo/pkgs/db"
+	"dumgo/server/db"
 )
 
 func main() {
