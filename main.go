@@ -23,10 +23,10 @@ func main() {
 	defer listener.Close()
 
 	userPool := users.UserPool{
-		Users: []users.User{},
+		Users: []*users.User{},
 	}
 
-	go users.HandleUser(&userPool, users.UserChan)
+	go users.HandleUser(&userPool, users.UserChan, users.UserChanResp)
 
 	for {
 		con, err := listener.Accept()

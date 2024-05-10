@@ -42,16 +42,23 @@ var UserChanResp = make(chan UserChanRespData)
 type UserComm int
 
 func (uc *UserComm) LogInUser(args *UserCommArgs, reply *UserCommResponse) error {
-	user := AddUser(args.Nick)
-	msg := fmt.Sprintf("User %s created with token %s", user.Nick, user.Token)
-	*reply = UserCommResponse{Status: true, Token: msg}
+	resp := AddUser(args.Nick)
+	if !resp.Success {
+		msg := fmt.Errorf("User auth failed > %s", resp.Msg)
+		*reply = UserCommResponse{Status: false, Token: "", Msg: msg.Error()}
+		return msg
+	}
+
+	user := resp.User
+	msg := fmt.Sprintf("User %s logged in with token %s", user.Nick, user.Token)
+	*reply = UserCommResponse{Status: true, Token: string(user.Token), Msg: msg}
 	return nil
 }
 
-func AddUser(nick string) *User {
+func AddUser(nick string) UserChanRespData {
 	UserChan <- fmt.Sprintf("log %s", nick)
 	resp := <-UserChanResp
-	return resp.User
+	return resp
 }
 
 func HandleUser(pool *UserPool, ch chan string, chResp chan UserChanRespData) {
@@ -67,8 +74,7 @@ func HandleUser(pool *UserPool, ch chan string, chResp chan UserChanRespData) {
 
 			isNickExists := pool.isNickExists(nick)
 			if isNickExists {
-				utils.Logger.Println("Nickname already in use: ", nick)
-				ch <- ""
+				chResp <- UserChanRespData{Success: false, User: nil, Msg: "Nickname already in use"}
 			}
 
 			newUser := &User{
