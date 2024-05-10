@@ -30,6 +30,16 @@ func (up *UserPool) isNickExists(nick string) bool {
 	return false
 }
 
+func (up *UserPool) isLogged(token string) *User {
+	for _, user := range up.Users {
+		if string(user.Token) == token {
+			return user
+		}
+	}
+
+	return nil
+}
+
 type UserChanRespData struct {
 	Success bool
 	User    *User
@@ -80,7 +90,7 @@ func HandleUser(pool *UserPool, ch chan string, chResp chan UserChanRespData) {
 			newUser := &User{
 				Token:    (h.Sum(nil)),
 				ReqCount: 0,
-				Db:       nil,
+				Db:       new(db.DumDB),
 				Nick:     nick,
 			}
 
