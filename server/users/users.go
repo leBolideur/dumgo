@@ -2,11 +2,12 @@ package users
 
 import (
 	"crypto/md5"
-	"dumgo/server/db"
-	"dumgo/server/utils"
 	"fmt"
 	"io"
 	"strings"
+
+	"dumgo/server/db"
+	"dumgo/server/utils"
 )
 
 type User struct {
@@ -76,6 +77,18 @@ func HandleUser(pool *UserPool, ch chan string, chResp chan UserChanRespData) {
 		msg := <-ch
 		split := strings.Split(msg, " ")
 		switch split[0] {
+		case "get":
+			token := split[1]
+			user := pool.isLogged(token)
+
+			var resp UserChanRespData
+			if user == nil {
+				resp = UserChanRespData{Success: false, User: nil, Msg: "Not logged"}
+			} else {
+				resp = UserChanRespData{Success: true, User: user, Msg: "Ok"}
+			}
+
+			chResp <- resp
 		case "log":
 			nick := split[1]
 			h := md5.New()
@@ -88,7 +101,7 @@ func HandleUser(pool *UserPool, ch chan string, chResp chan UserChanRespData) {
 			}
 
 			newUser := &User{
-				Token:    (h.Sum(nil)),
+				Token:    h.Sum(nil)[:2],
 				ReqCount: 0,
 				Db:       new(db.DumDB),
 				Nick:     nick,

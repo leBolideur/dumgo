@@ -9,15 +9,6 @@ type GetArgs struct {
 	Key string
 }
 
-type ReqArgs struct {
-	Request string
-}
-
-type Response struct {
-	Success bool
-	Msg     string
-}
-
 type RawType string
 
 const (

@@ -4,16 +4,15 @@ import (
 	"net"
 	"net/rpc"
 
-	"dumgo/server/db"
+	"dumgo/server/request"
 	"dumgo/server/users"
 	"dumgo/server/utils"
 )
 
 func main() {
-	dumdb := db.NewDumDB()
 	userComm := new(users.UserComm)
-	rpc.Register(dumdb)
 	rpc.Register(userComm)
+	rpc.Register(new(request.Request))
 
 	listener, err := net.Listen("tcp", "localhost:1234")
 	if err != nil {
@@ -27,15 +26,5 @@ func main() {
 	}
 
 	go users.HandleUser(&userPool, users.UserChan, users.UserChanResp)
-
-	for {
-		con, err := listener.Accept()
-		if err != nil {
-			utils.Logger.Fatal("accept error")
-			continue
-		}
-
-		go rpc.ServeConn(con)
-		utils.Logger.Println("request received!")
-	}
+	request.HandleRequest(listener)
 }

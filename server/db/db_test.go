@@ -23,7 +23,7 @@ func TestInferType(t *testing.T) {
 }
 
 func TestUpdateInt(t *testing.T) {
-	var reply Response
+	var reply ReqResponse
 	dumdb := NewDumDB()
 	dumdb.Set(&SetArgs{"a", "11"}, &reply)
 	dumdb.Set(&SetArgs{"b", "6"}, &reply)
@@ -44,7 +44,7 @@ func TestUpdateInt(t *testing.T) {
 	}
 
 	for i, exp := range expected {
-		var reply Response
+		var reply ReqResponse
 		dumdb.UpdateInt(exp.Key, exp.Op, exp.By, &reply)
 
 		if !reply.Success {

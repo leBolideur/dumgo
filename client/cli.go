@@ -52,7 +52,7 @@ func main() {
 	type ReqArgs struct {
 		Request string
 	}
-	err = client.Call("DumDB.Request", &ReqArgs{Request: args[1]}, &reply)
+	err = client.Call("Request.Req", &ReqArgs{Request: args[1]}, &reply)
 	if err != nil {
 		fmt.Println("RPC call error: ", err)
 		return
