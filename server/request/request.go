@@ -28,7 +28,6 @@ func HandleRequest(listener net.Listener) {
 type Request struct{}
 
 func (re *Request) Req(req *db.ReqArgs, reply *db.ReqResponse) error {
-	// base := db.NewDumDB()
 	cmd := strings.Split(req.Request, " ")
 	token := cmd[0]
 	if token == "" {
@@ -39,6 +38,12 @@ func (re *Request) Req(req *db.ReqArgs, reply *db.ReqResponse) error {
 
 	users.UserChan <- fmt.Sprintf("get %s", token)
 	resp := <-users.UserChanResp
+	if resp.User == nil {
+		msg := fmt.Errorf("No user found")
+		*reply = db.ReqResponse{Success: false, Msg: msg.Error()}
+		return msg
+	}
+
 	base := resp.User.Db
 
 	switch cmd[1] {
@@ -49,27 +54,28 @@ func (re *Request) Req(req *db.ReqArgs, reply *db.ReqResponse) error {
 	case "RESTORE":
 		base.Restore(reply)
 	case "SET":
-		setArgs := &db.SetArgs{Key: cmd[1], Value: cmd[2]}
+		setArgs := &db.SetArgs{Key: cmd[2], Value: cmd[3]}
+		fmt.Println("setArgs >> ", setArgs)
 		base.Set(setArgs, reply)
 	case "GET":
-		getArgs := &db.GetArgs{Key: cmd[1]}
+		getArgs := &db.GetArgs{Key: cmd[2]}
 		base.Get(getArgs, reply)
 	case "INCR":
-		base.UpdateInt(cmd[1], "+", 1, reply)
+		base.UpdateInt(cmd[2], "+", 1, reply)
 	case "DECR":
-		base.UpdateInt(cmd[1], "-", 1, reply)
+		base.UpdateInt(cmd[2], "-", 1, reply)
 	case "INCRBY":
-		by, err := strconv.ParseInt(cmd[2], 10, 64)
+		by, err := strconv.ParseInt(cmd[3], 10, 64)
 		if err != nil {
 			return fmt.Errorf("Invalid increment value, got '%s'", cmd[2])
 		}
-		base.UpdateInt(cmd[1], "+", by, reply)
+		base.UpdateInt(cmd[2], "+", by, reply)
 	case "DECRBY":
-		by, err := strconv.ParseInt(cmd[2], 10, 64)
+		by, err := strconv.ParseInt(cmd[3], 10, 64)
 		if err != nil {
-			return fmt.Errorf("Invalid increment value, got '%s'", cmd[2])
+			return fmt.Errorf("Invalid increment value, got '%s'", cmd[3])
 		}
-		base.UpdateInt(cmd[1], "-", by, reply)
+		base.UpdateInt(cmd[2], "-", by, reply)
 	default:
 		return fmt.Errorf("Unknown cmd '%s'\n", cmd)
 	}

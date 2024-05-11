@@ -11,7 +11,7 @@ import (
 )
 
 type User struct {
-	Token    []byte
+	Token    string
 	ReqCount int
 	Db       *db.DumDB
 	Nick     string
@@ -33,7 +33,7 @@ func (up *UserPool) isNickExists(nick string) bool {
 
 func (up *UserPool) isLogged(token string) *User {
 	for _, user := range up.Users {
-		if string(user.Token) == token {
+		if user.Token == token {
 			return user
 		}
 	}
@@ -100,10 +100,11 @@ func HandleUser(pool *UserPool, ch chan string, chResp chan UserChanRespData) {
 				chResp <- UserChanRespData{Success: false, User: nil, Msg: "Nickname already in use"}
 			}
 
+			tokenStr := fmt.Sprintf("%x", h.Sum(nil)[:2])
 			newUser := &User{
-				Token:    h.Sum(nil)[:2],
+				Token:    tokenStr,
 				ReqCount: 0,
-				Db:       new(db.DumDB),
+				Db:       db.NewDumDB(),
 				Nick:     nick,
 			}
 

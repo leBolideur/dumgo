@@ -21,7 +21,7 @@ func logUser(client *rpc.Client, nick string) {
 		return
 	}
 
-	fmt.Printf("reply [%t] >> user token > %x\n", userReply.Status, userReply.Token)
+	fmt.Printf("reply [%t] >> user token > %s\n", userReply.Status, userReply.Token)
 }
 
 func main() {
