@@ -55,7 +55,6 @@ func (re *Request) Req(req *db.ReqArgs, reply *db.ReqResponse) error {
 		base.Restore(reply)
 	case "SET":
 		setArgs := &db.SetArgs{Key: cmd[2], Value: cmd[3]}
-		fmt.Println("setArgs >> ", setArgs)
 		base.Set(setArgs, reply)
 	case "GET":
 		getArgs := &db.GetArgs{Key: cmd[2]}

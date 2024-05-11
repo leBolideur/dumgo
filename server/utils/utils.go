@@ -5,4 +5,4 @@ import (
 	"os"
 )
 
-var Logger = log.New(os.Stdout, "[dumgo]", log.Ldate|log.Lshortfile)
+var Logger = log.New(os.Stdout, "[dumgo]", log.Ldate|log.Ltime)
